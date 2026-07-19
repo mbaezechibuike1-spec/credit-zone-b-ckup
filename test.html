@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CREDIT ZONE - Connect Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #080c16;
+            color: #f0f4ff;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .card {
+            background: #151f35;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px solid #1e2d48;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input {
+            background: #0d1425;
+            color: #f0f4ff;
+        }
+        button {
+            background: #f5a623;
+            color: #0b0f1a;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .gold {
+            color: #f5a623;
+        }
+        .status {
+            color: #8da0c9;
+        }
+        pre {
+            background: #0d1425;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏦 CREDIT ZONE</h1>
+    <p class="status">Status: <span id="status">Connecting...</span></p>
+
+    <div class="card">
+        <h3>📝 Register</h3>
+        <input id="regName" placeholder="Full Name" />
+        <input id="regEmail" placeholder="Email" />
+        <input id="regPass" type="password" placeholder="Password" />
+        <input id="regRef" placeholder="Referral Code (optional)" />
+        <button onclick="register()">Create Account</button>
+    </div>
+
+    <div class="card">
+        <h3>🔐 Login</h3>
+        <input id="loginEmail" placeholder="Email" />
+        <input id="loginPass" type="password" placeholder="Password" />
+        <button onclick="login()">Sign In</button>
+    </div>
+
+    <div class="card">
+        <h3>👤 Profile</h3>
+        <button onclick="getProfile()">Get My Profile</button>
+        <button onclick="tap()">👆 TAP (20% of balance)</button>
+        <button onclick="getLeaderboard()">🏆 Leaderboard</button>
+        <pre id="result">Results will appear here...</pre>
+    </div>
+
+    <div class="card">
+        <h3>💰 Balance: <span class="gold" id="balanceDisplay">0.00</span></h3>
+    </div>
+
+    <script>
+        // API URL - change this if your backend is on a different IP
+        const API_URL = 'http://localhost:5000';
+        let token = localStorage.getItem('token') || '';
+
+        async function callAPI(endpoint, method = 'GET', data = null) {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const options = {
+                method: method,
+                headers: headers
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                return { error: 'Network error: ' + error.message };
+            }
+        }
+
+        function showResult(data) {
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function register() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPass').value;
+            const refCode = document.getElementById('regRef').value;
+            
+            const result = await callAPI('/api/auth/register', 'POST', {
+                name, email, password, refCode
+            });
+            
+            if (result.user && result.user.token) {
+                token = result.user.token;
+                localStorage.setItem('token', token);
+                document.getElementById('status').innerHTML = '✅ Logged in as ' + result.user.name;
+                updateBalance();
+            }
+            showResult(result);
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPass').value;
+            
+            const result = await callAPI('/api/auth/login', 'POST', {
+                email, password
+            });
+            
+            if (result.user && result.user.token) {
+                token = result.user.token;
+                localStorage.setItem('token', token);
+                document.getElementById('status').innerHTML = '✅ Logged in as ' + result.user.name;
+                updateBalance();
+            }
+            showResult(result);
+        }
+
+        async function getProfile() {
+            const result = await callAPI('/api/user/profile');
+            showResult(result);
+            if (result.balance !== undefined) {
+                document.getElementById('balanceDisplay').textContent = result.balance.toFixed(2);
+            }
+        }
+
+        async function tap() {
+            const result = await callAPI('/api/tap', 'POST');
+            showResult(result);
+            if (result.newBalance !== undefined) {
+                document.getElementById('balanceDisplay').textContent = result.newBalance.toFixed(2);
+            }
+        }
+
+        async function getLeaderboard() {
+            const result = await callAPI('/api/leaderboard');
+            showResult(result);
+        }
+
+        async function updateBalance() {
+            const result = await callAPI('/api/user/profile');
+            if (result.balance !== undefined) {
+                document.getElementById('balanceDisplay').textContent = result.balance.toFixed(2);
+            }
+        }
+
+        // Check if server is running
+        async function checkStatus() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                document.getElementById('status').innerHTML = '✅ ' + data.status;
+            } catch {
+                document.getElementById('status').innerHTML = '❌ Server not running!';
+            }
+        }
+
+        // Auto-check status and load profile if logged in
+        checkStatus();
+        if (token) {
+            setTimeout(updateBalance, 500);
+        }
+
+        // Update balance every 10 seconds
+        setInterval(() => {
+            if (token) {
+                updateBalance();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

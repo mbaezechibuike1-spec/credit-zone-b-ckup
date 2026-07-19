@@ -1,0 +1,78 @@
+[
+  {
+    "id": "279c7057b2af361e",
+    "name": "Gahhah",
+    "email": "mbaezechibuike4@gmail.com",
+    "password": "d2cf302eadfe3152a449e098e91d1998f04342c5765718aa96cec6335538176e",
+    "refCode": "CZDC256F",
+    "referredBy": null,
+    "vipLevel": 0,
+    "balance": 0,
+    "totalDeposits": 0,
+    "totalWithdrawals": 0,
+    "tapHistory": [],
+    "activities": [],
+    "deposits": [],
+    "withdrawals": [],
+    "vipSince": null,
+    "createdAt": "2026-07-15T19:18:14.258798",
+    "lastTapTime": null,
+    "token": "187df372969d4327263ff427cc21d9a4eccfa6cd9f5a8a084bb5e94f514ed7eb"
+  },
+  {
+    "id": "f774823165c9c699",
+    "name": "Mbaeze chibuike",
+    "email": "mbaezechibuike7@gmail.com",
+    "password": "d2cf302eadfe3152a449e098e91d1998f04342c5765718aa96cec6335538176e",
+    "refCode": "CZ97B098",
+    "referredBy": null,
+    "vipLevel": 0,
+    "balance": 12000.01,
+    "totalDeposits": 12000,
+    "totalWithdrawals": 0,
+    "tapHistory": [
+      "2026-07-15T19:23:17.309611"
+    ],
+    "activities": [
+      "Tapped earned \u20a60.01",
+      "Deposited \u20a610000.00"
+    ],
+    "deposits": [
+      {
+        "amount": 10000,
+        "status": "Completed",
+        "date": "2026-07-15T22:46:49.000411"
+      },
+      {
+        "amount": 2000,
+        "status": "Completed",
+        "date": "2026-07-15T23:08:02.043036"
+      }
+    ],
+    "withdrawals": [],
+    "vipSince": null,
+    "createdAt": "2026-07-15T19:23:10.701667",
+    "lastTapTime": "2026-07-15T19:23:17.309555",
+    "token": "3657598f9b19c702db68518ec6db9e825c5efe230dfcbdc81218bd62b412635e"
+  },
+  {
+    "id": "a681b4bd8ee4558b",
+    "name": "John",
+    "email": "john@test.com",
+    "password": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "refCode": "CZ7F3F47",
+    "referredBy": null,
+    "vipLevel": 0,
+    "balance": 0,
+    "totalDeposits": 0,
+    "totalWithdrawals": 0,
+    "tapHistory": [],
+    "activities": [],
+    "deposits": [],
+    "withdrawals": [],
+    "vipSince": null,
+    "createdAt": "2026-07-15T22:18:11.868722",
+    "lastTapTime": null,
+    "token": "bb13b351e1623ec2927172b2538d18a2eacb887ba15e862ffcfcc42a9778dcda"
+  }
+]

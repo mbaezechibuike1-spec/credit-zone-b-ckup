@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>CREDIT ZONE — Investment Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <style>
+        /* Same CSS as before - keep all your styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #080c16;
+            --bg-secondary: #0f1629;
+            --bg-card: #151f35;
+            --bg-input: #0d1425;
+            --border-color: #1e2d48;
+            --text-primary: #f0f4ff;
+            --text-secondary: #8da0c9;
+            --text-muted: #5a6f94;
+            --gold: #f5a623;
+            --gold-glow: rgba(245, 166, 35, 0.25);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --transition: 0.25s ease;
+            --header-height: 72px;
+            --bottom-nav-height: 68px;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-top: var(--header-height);
+            padding-bottom: var(--bottom-nav-height);
+            overflow-x: hidden;
+        }
+        /* ... (keep all your CSS from the original file) ... */
+        /* I'm including the essential parts here, but use your full CSS */
+        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+        .btn-primary { background: linear-gradient(135deg, var(--gold), #d4891b); color: #0b0f1a; font-weight: 700; padding: 12px 24px; border-radius: 30px; border: none; cursor: pointer; }
+        input, select { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); }
+        .auth-overlay { position: fixed; inset: 0; background: rgba(8, 12, 22, 0.96); z-index: 999; display: flex; align-items: center; justify-content: center; }
+        .auth-overlay.hidden { display: none; }
+        .auth-box { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 32px; max-width: 420px; width: 100%; }
+        .toast-container { position: fixed; top: 90px; right: 16px; z-index: 9999; max-width: 360px; width: 100%; }
+        .toast { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 10px; border-left: 4px solid var(--gold); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { 0% { opacity: 0; transform: translateX(40px); } 100% { opacity: 1; transform: translateX(0); } }
+        .gold { color: var(--gold); }
+        .text-muted { color: var(--text-muted); }
+        .w-full { width: 100%; }
+        /* Add more styles as needed */
+    </style>
+</head>
+<body>
+
+<div class="auth-overlay" id="authOverlay">
+    <div class="auth-box">
+        <h2 style="text-align:center;color:var(--gold);">CREDIT ZONE</h2>
+        <p style="text-align:center;color:var(--text-secondary);" id="authTitle">Sign in to your account</p>
+        <div id="authError" style="color:red;display:none;"></div>
+        <div id="authSuccess" style="color:green;display:none;"></div>
+        <input type="email" id="authEmail" placeholder="Email" style="margin:10px 0;" />
+        <input type="password" id="authPassword" placeholder="Password" style="margin:10px 0;" />
+        <input type="text" id="authName" placeholder="Full Name" style="margin:10px 0;display:none;" />
+        <input type="text" id="authRefCode" p        <p style="text-align:center;margin-top:15px;color:var(--text-secondary);">
+            <span id="authSwitchText">Don't have an account?</span>
+            <a href="#" onclick="toggleAuth()" style="color:var(--gold);">Sign Up</a>
+        </p>
+    </div>
+</div>
+
+<!-- Main App -->
+<div id="app" style="display:none;">
+    <header style="position:fixed;top:0;left:0;right:0;height:var(--header-height);background:rgba(8,12,22,0.94);border-bottom:1px solid var(--border-color);display:flex;align-items:center;padding:0 16px;z-index:200;">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:38px;height:38px;background:linear-gradient(135deg,var(--gold),#d4891b);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0b0f1a;">C</div>
+            <h1 style="font-size:20px;font-weight:800;background:linear-gradient(135deg,#fff 50%,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">CREDIT ZONE</h1>
+        </div>
+        <div style="margin-left:auto;background:var(--bg-card);padding:6px 16px;border-radius:30px;border:1px solid var(--border-color);">
+            <span>₦<span id="headerBalance">0.00</span></span>
+        </div>
+    </header>
+
+    <div style="max-width:800px;margin:0 auto;padding:16px;">
+        <!-- Dashboard -->
+        <div id="page-dashboard">
+            <div class="card">
+                <h3>Welcome, <span id="userName">User</span>!</h3>
+                <p>VIP Level: <span id="vipBadge">VIP 0</span></p>
+                <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                    <div style="background:var(--bg-input);padding:10px;border-radius:var(--radius-sm);flex:1;min-width:100px;">
+                        <div style="font-size:11px;color:var(--text-muted);">Balance</div>
+                        <div style="font-size:20px;font-weight:700;color:var(--gold);">₦<span id="dashBalance">0.00</span></div>
+                    </div>
+                    <div style="background:var(--bg-input);padding:10px;border-radius:var(--radius-sm);flex:1;min-width:100px;">
+                        <div style="font-size:11px;color:var(--text-muted);">Referrals</div>
+                        <div style="font-size:20px;font-weight:700;"><span id="dashReferrals">0</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Recent Activity</h3>
+                <div id="recentActivity"><p style="color:var(--text-muted);">No activity yet.</p></div>
+            </div>
+        </div>
+
+        <!-- Task Page -->
+        <div id="page-task" style="display:none;">
+            <div class="card">
+                <h3>👆 Tap & Earn</h3>
+                <div style="text-align:center;padding:20px;">
+                    <div onclick="handleTap()" id="taskCircle" style="width:160px;height:160px;border-radius:50%;background:linear-gradient(135deg,var(--bg-card),var(--bg-input));border:3px solid var(--border-color);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto;cursor:pointer;transition:all var(--transition);">
+                        <i class="fas fa-hand-peace" style="font-size:36px;color:var(--gold);"></i>
+                        <span style="font-weight:700;">TAP</span>
+                        <span style="font-size:12px;color:var(--text-muted);">& earn</span>
+                    </div>
+                    <div style="margin-top:10px;">Reward: <strong id="taskReward">0.00</strong> (20% of balance)</div>
+                    <div style="font-size:13px;color:var(--text-muted);">Last tap: <span id="lastTap">Never</span></div>
+                    <div id="taskMessage" style="margin-top:10px;color:var(--gold);"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Withdraw Page -->
+        <div id="page-withdraw" style="display:none;">
+            <div class="card">
+                <h3>💰 Withdraw</h3>
+                <div style="background:var(--bg-input);padding:10px;border-radius:var(--radius-sm);margin-bottom:10px;">
+                    Today: <span id="withdrawDay">--</span>
+                    <span id="withdrawStatus" style="color:var(--red);">(Fridays only)</span>
+                </div>
+                <input type="text" id="withdrawBank" placeholder="Bank Name" />
+                <input type="text" id="withdrawAcctName" placeholder="Account Name" style="margin-top:10px;" />
+                <input type="text" id="withdrawAcctNum" placeholder="Account Number" style="margin-top:10px;" />
+                <input type="number" id="withdrawAmount" placeholder="Amount" style="margin-top:10px;" />
+                <button class="btn-primary w-full" onclick="handleWithdraw()" style="margin-top:10px;">Withdraw</button>
+                <div id="withdrawMsg" style="margin-top:10px;color:var(--text-secondary);"></div>
+            </div>
+        </div>
+
+        <!-- Deposit Page -->
+        <div id="page-deposit" style="display:none;">
+            <div class="card">
+                <h3>📥 Deposit</h3>
+                <div style="background:var(--bg-input);padding:14px;border-radius:var(--radius-sm);border:1px solid var(--border-color);">
+                    <span>OPAY_LTD</span>
+                    <span style="float:right;font-weight:700;color:var(--gold);">9116285692</span>
+                </div>
+                <input type="number" id="depositAmount" placeholder="Amount (min ₦100)" style="margin-top:10px;" />
+                <button class="btn-primary w-full" onclick="handleDeposit()" style="margin-top:10px;">Start Deposit</button>
+                <div id="depositMsg" style="margin-top:10px;color:var(--text-secondary);"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav style="position:fixed;bottom:0;left:0;right:0;height:var(--bottom-nav-height);background:rgba(8,12,22,0.96);border-top:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-around;z-index:200;padding:0 6px;">
+        <button onclick="showPage('dashboard')" style="background:none;border:none;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;font-size:10px;padding:6px 10px;" id="nav-dashboard"><i class="fas fa-chart-pie" style="font-size:20px;"></i><span>Home</span></button>
+        <button onclick="showPage('task')" style="background:none;border:none;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;font-size:10px;padding:6px 10px;" id="nav-task"><i class="fas fa-tasks" style="font-size:20px;"></i><span>Task</span></button>
+        <button onclick="showPage('withdraw')" style="background:none;border:none;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;font-size:10px;padding:6px 10px;" id="nav-withdraw"><i class="fas fa-arrow-up" style="font-size:20px;"></i><span>Withdraw</span></button>
+        <button onclick="showPage('deposit')" style="background:none;border:none;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;font-size:10px;padding:6px 10px;" id="nav-deposit"><i class="fas fa-arrow-down" style="font-size:20px;"></i><span>Deposit</span></button>
+        <button onclick="logout()" style="background:none;border:none;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;font-size:10px;padding:6px 10px;"><i class="fas fa-sign-out-alt" style="font-size:20px;"></i><span>Logout</span></button>
+    </nav>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// =====================================================
+// API CONFIGURATION - Connect to backend
+// =====================================================
+const API_URL = 'http://localhost:5000';
+let token = localStorage.getItem('token') || '';
+let currentUser = null;
+
+// =====================================================
+// API HELPER
+// =====================================================
+async function callAPI(endpoint, method = 'GET', data = null) {
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const options = {
+        method: method,
+        headers: headers
+    };
+    
+    if (data) {
+        options.body = JSON.stringify(data);
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, options);
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        return { error: 'Network error: ' + error.message };
+    }
+}
+
+// =====================================================
+// TOAST NOTIFICATIONS
+// =====================================================
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+    toast.innerHTML = `${icon} ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.remove(); }, 3500);
+}
+
+// =====================================================
+// AUTHENTICATION
+// =====================================================
+let isSignUp = false;
+
+function toggleAuth() {
+    isSignUp = !isSignUp;
+    const title = document.getElementById('authTitle');
+    const btn = document.getElementById('authBtn');
+    const nameInput = document.getElementById('authName');
+    const refInput = document.getElementById('authRefCode');
+    const switchText = document.getElementById('authSwitchText');
+    
+    if (isSignUp) {
+        title.textContent = 'Create your account';
+        btn.textContent = 'Sign Up';
+        nameInput.style.display = 'block';
+        refInput.style.display = 'block';
+        switchText.textContent = 'Already have an account?';
+        document.querySelector('#authSwitchText + a').textContent = 'Sign In';
+    } else {
+        title.textContent = 'Sign in to your account';
+        btn.textContent = 'Sign In';
+        nameInput.style.display = 'none';
+        refInput.style.display = 'none';
+        switchText.textContent = "Don't have an account?";
+        document.querySelector('#authSwitchText + a').textContent = 'Sign Up';
+    }
+}
+
+async function handleAuth() {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    const errorDiv = document.getElementById('authError');
+    const successDiv = document.getElementById('authSuccess');
+    
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+    
+    if (!email || !password) {
+        errorDiv.textContent = 'Please fill in all fields.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    if (isSignUp) {
+        const name = document.getElementById('authName').value;
+        const refCode = document.getElementById('authRefCode').value;
+        
+        if (!name) {
+            errorDiv.textContent = 'Please enter your full name.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        
+        const result = await callAPI('/api/auth/register', 'POST', {
+            name, email, password, refCode
+        });
+        
+        if (result.error) {
+            errorDiv.textContent = result.error;
+            errorDiv.style.display = 'block';
+        } else if (result.user) {
+            token = result.user.token;
+            localStorage.setItem('token', token);
+            successDiv.textContent = 'Account created successfully!';
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('authOverlay').classList.add('hidden');
+                document.getElementById('app').style.display = 'block';
+                loadUserData();
+            }, 500);
+        }
+    } else {
+        const result = await callAPI('/api/auth/login', 'POST', {
+            email, password
+        });
+        
+        if (result.error) {
+            errorDiv.textContent = result.error;
+            errorDiv.style.display = 'block';
+        } else if (result.user) {
+            token = result.user.token;
+            localStorage.setItem('token', token);
+            successDiv.textContent = 'Welcome back!';
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('authOverlay').classList.add('hidden');
+                document.getElementById('app').style.display = 'block';
+                loadUserData();
+            }, 500);
+        }
+    }
+}
+
+// =====================================================
+// USER DATA
+// =====================================================
+async function loadUserData() {
+    const result = await callAPI('/api/user/profile');
+    if (!result.error) {
+        currentUser = result;
+        updateUI();
+    }
+}
+
+function updateUI() {
+    if (!currentUser) return;
+    
+    document.getElementById('userName').textContent = currentUser.name || 'User';
+    document.getElementById('headerBalance').textContent = (currentUser.balance || 0).toFixed(2);
+    document.getElementById('dashBalance').textContent = (currentUser.balance || 0).toFixed(2);
+    document.getElementById('vipBadge').textContent = `VIP ${currentUser.vipLevel || 0}`;
+    
+    // Update task
+    const reward = (currentUser.balance || 0) * 0.2;
+    document.getElementById('taskReward').textContent = reward.toFixed(2);
+    
+    // Update last tap
+    if (currentUser.lastTapTime) {
+        document.getElementById('lastTap').textContent = new Date(currentUser.lastTapTime).toLocaleString();
+    }
+    
+    // Update activities
+    const activities = currentUser.activities || [];
+    const activityDiv = document.getElementById('recentActivity');
+    if (activities.length === 0) {
+        activityDiv.innerHTML = '<p style="color:var(--text-muted);">No activity yet.</p>';
+    } else {
+        activityDiv.innerHTML = activities.slice(-5).reverse().map(a => 
+            `<p style="padding:4px 0;border-bottom:1px solid var(--border-color);font-size:13px;">${a}</p>`
+        ).join('');
+    }
+}
+
+// =====================================================
+// PAGES
+// =====================================================
+function showPage(page) {
+    const pages = ['dashboard', 'task', 'withdraw', 'deposit'];
+    pages.forEach(p => {
+        const el = document.getElementById(`page-${p}`);
+        el.style.display = p === page ? 'block' : 'none';
+        const nav = document.getElementById(`nav-${p}`);
+        if (nav) {
+            nav.style.color = p === page ? 'var(--gold)' : 'var(--text-muted)';
+        }
+    });
+}
+
+// =====================================================
+// TAP
+// =====================================================
+async function handleTap() {
+    const result = await callAPI('/api/tap', 'POST');
+    
+    if (result.error) {
+        if (result.cooldown) {
+            showToast(result.error, 'error');
+        } else {
+            showToast(result.error, 'error');
+        }
+    } else if (result.newBalance !== undefined) {
+        currentUser.balance = result.newBalance;
+        currentUser.lastTapTime = new Date().toISOString();
+        updateUI();
+        showToast(result.message, 'success');
+    }
+}
+
+// =====================================================
+// WITHDRAW
+// =====================================================
+async function handleWithdraw() {
+    const bank = document.getElementById('withdrawBank').value;
+    const acctName = document.getElementById('withdrawAcctName').value;
+    const acctNum = document.getElementById('withdrawAcctNum').value;
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    
+    if (!bank || !acctName || !acctNum || !amount) {
+        showToast('Please fill in all fields.', 'error');
+        return;
+    }
+    
+    const result = await callAPI('/api/withdraw', 'POST', {
+        amount, bank, acctName, acctNum
+    });
+    
+    if (result.error) {
+        showToast(result.error, 'error');
+    } else {
+        currentUser.balance = result.newBalance;
+        updateUI();
+        showToast('Withdrawal request submitted!', 'success');
+        document.getElementById('withdrawMsg').textContent = '✅ Withdrawal request submitted!';
+        // Clear fields
+        document.getElementById('withdrawBank').value = '';
+        document.getElementById('withdrawAcctName').value = '';
+        document.getElementById('withdrawAcctNum').value = '';
+        document.getElementById('withdrawAmount').value = '';
+    }
+}
+
+// =====================================================
+// DEPOSIT
+// =====================================================
+async function handleDeposit() {
+    const amount = parseFloat(document.getElementById('depositAmount').value);
+    
+    if (!amount || amount < 100) {
+        showToast('Minimum deposit is ₦100', 'error');
+        return;
+    }
+    
+    const result = await callAPI('/api/deposit/start', 'POST', { amount });
+    
+    if (result.error) {
+        showToast(result.error, 'error');
+    } else {
+        showToast('Deposit started! Confirm after sending money.', 'success');
+        document.getElementById('depositMsg').textContent = '💰 Deposit started! Please send the money and confirm.';
+        
+        // Simple confirmation (in production, you'd want a proper flow)
+        setTimeout(async () => {
+            const confirmResult = await callAPI('/api/deposit/confirm', 'POST', {
+                depositId: result.depositId || 'test'
+            });
+            if (!confirmResult.error) {
+                currentUser.balance = confirmResult.newBalance;
+                updateUI();
+                showToast('Deposit confirmed!', 'success');
+                document.getElementById('depositMsg').textContent = '✅ Deposit confirmed!';
+            }
+        }, 5000);
+    }
+}
+
+// =====================================================
+// LOGOUT
+// =====================================================
+function logout() {
+    localStorage.removeItem('token');
+    token = '';
+    currentUser = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('authOverlay').classList.remove('hidden');
+    document.getElementById('authEmail').value = '';
+    document.getElementById('authPassword').value = '';
+    showToast('Logged out successfully', 'info');
+}
+
+// =====================================================
+// CHECK DAY FOR WITHDRAW
+// =====================================================
+function updateWithdrawDay() {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const today = days[new Date().getDay()];
+    document.getElementById('withdrawDay').textContent = today;
+    const status = document.getElementById('withdrawStatus');
+    if (today === 'Friday') {
+        status.textContent = '✅ Withdrawals open!';
+        status.style.color = '#2ecc71';
+    } else {
+        status.textContent = '⛔ Fridays only';
+        status.style.color = '#e74c3c';
+    }
+}
+
+// =====================================================
+// INIT
+// =====================================================
+async function init() {
+    updateWithdrawDay();
+    
+    // Check if already logged in
+    if (token) {
+        const result = await callAPI('/api/user/profile');
+        if (!result.error) {
+            currentUser = result;
+            document.getElementById('authOverlay').classList.add('hidden');
+            document.getElementById('app').style.display = 'block';
+            updateUI();
+            showPage('dashboard');
+            return;
+        }
+    }
+    
+    // Show auth
+    document.getElementById('authOverlay').classList.remove('hidden');
+    document.getElementById('app').style.display = 'none';
+}
+
+// Start the app
+init();
+
+// Auto-refresh balance every 30 seconds
+setInterval(() => {
+    if (token && currentUser) {
+        callAPI('/api/user/profile').then(result => {
+            if (!result.error) {
+                currentUser = result;
+                updateUI();
+            }
+        });
+    }
+}, 30000);
+</script>
+</body>
+</html>
